@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vida Ops</title>
+  <script src="https://apis.google.com/js/api.js"></script>
+  <script src="https://accounts.google.com/gsi/client"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+      --font-mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+      --color-background-primary:#ffffff;--color-background-secondary:#f5f5f4;
+      --color-background-tertiary:#efede8;--color-background-info:#e6f1fb;
+      --color-background-success:#eaf3de;--color-background-warning:#faeeda;
+      --color-background-danger:#fcebeb;--color-text-primary:#1a1a18;
+      --color-text-secondary:#6b6b68;--color-text-tertiary:#a0a09c;
+      --color-text-info:#185fa5;--color-text-success:#3b6d11;
+      --color-text-warning:#854f0b;--color-text-danger:#a32d2d;
+      --color-border-tertiary:rgba(0,0,0,0.12);--color-border-secondary:rgba(0,0,0,0.22);
+      --color-border-primary:rgba(0,0,0,0.32);--color-border-info:#b5d4f4;
+      --color-border-success:#c0dd97;--color-border-warning:#fac775;
+      --color-border-danger:#f7c1c1;--border-radius-md:8px;
+      --border-radius-lg:12px;--border-radius-xl:16px;
+    }
+    @media(prefers-color-scheme:dark){:root{
+      --color-background-primary:#1c1c1a;--color-background-secondary:#252523;
+      --color-background-tertiary:#2e2e2b;--color-background-info:#0c2d4e;
+      --color-background-success:#1a3308;--color-background-warning:#3d2204;
+      --color-background-danger:#3d0f0f;--color-text-primary:#f0ede8;
+      --color-text-secondary:#a09e99;--color-text-tertiary:#6b6965;
+      --color-text-info:#85b7eb;--color-text-success:#97c459;
+      --color-text-warning:#ef9f27;--color-text-danger:#f09595;
+      --color-border-tertiary:rgba(255,255,255,0.1);--color-border-secondary:rgba(255,255,255,0.18);
+      --color-border-primary:rgba(255,255,255,0.28);--color-border-info:#185fa5;
+      --color-border-success:#3b6d11;--color-border-warning:#854f0b;
+      --color-border-danger:#a32d2d;
+    }}
+    html,body{height:100%;background:var(--color-background-tertiary);color:var(--color-text-primary);font-family:var(--font-sans);font-size:14px;line-height:1.5}
+    #app-root{max-width:1160px;margin:0 auto;padding:1rem 1.25rem 3rem}
+    .nav{display:flex;gap:6px;margin-bottom:1.5rem;border-bottom:.5px solid var(--color-border-tertiary);padding-bottom:1rem;flex-wrap:wrap}
+    .nav button{padding:6px 14px;border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-secondary);cursor:pointer;font-size:13px;font-family:var(--font-sans)}
+    .nav button.active{background:var(--color-background-secondary);color:var(--color-text-primary);border-color:var(--color-border-primary);font-weight:500}
+    .nav button:hover:not(.active){background:var(--color-background-secondary)}
+    .page{display:none}.page.active{display:block}
+    .g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:1rem}
+    .g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:1rem}
+    .g4{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1rem}
+    .g5{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:1rem}
+    .metric{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.85rem 1rem}
+    .metric .lbl{font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+    .metric .val{font-size:20px;font-weight:500}
+    .metric .sub{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+    .card{background:var(--color-background-primary);border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:1rem}
+    .ctitle{font-size:14px;font-weight:500;margin-bottom:.85rem}
+    .badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:var(--border-radius-md);white-space:nowrap}
+    .bwarn{background:var(--color-background-warning);color:var(--color-text-warning)}
+    .binfo{background:var(--color-background-info);color:var(--color-text-info)}
+    .bok{background:var(--color-background-success);color:var(--color-text-success)}
+    .bdanger{background:var(--color-background-danger);color:var(--color-text-danger)}
+    .bneutral{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+    .bwholesale{background:#eaf3de;color:#3b6d11}.bretail{background:#e6f1fb;color:#185fa5}.bcustom{background:#faeeda;color:#854f0b}
+    .btn{padding:7px 16px;border:.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;cursor:pointer;font-size:13px;color:var(--color-text-primary);font-family:var(--font-sans)}
+    .btn:hover{background:var(--color-background-secondary)}
+    .btnp{background:var(--color-background-info);color:var(--color-text-info);border-color:var(--color-border-info)}
+    .btnok{background:var(--color-background-success);color:var(--color-text-success);border-color:var(--color-border-success)}
+    .btndanger{background:var(--color-background-danger);color:var(--color-text-danger);border-color:var(--color-border-danger)}
+    .btnsm{padding:4px 10px;font-size:12px}
+    label{font-size:12px;color:var(--color-text-secondary);display:block;margin-bottom:3px}
+    input,select,textarea{width:100%;padding:7px 10px;border:.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:13px;font-family:var(--font-sans)}
+    textarea{resize:vertical;min-height:56px}
+    input:focus,select:focus,textarea:focus{outline:none;border-color:var(--color-border-primary)}
+    .row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+    .row>*{flex:1;min-width:90px}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th{text-align:left;padding:7px 10px;border-bottom:.5px solid var(--color-border-tertiary);font-weight:500;font-size:11px;color:var(--color-text-secondary);white-space:nowrap;text-transform:uppercase}
+    td{padding:7px 10px;border-bottom:.5px solid var(--color-border-tertiary);vertical-align:middle}
+    tr:last-child td{border-bottom:none}
+    .szlabels{display:grid;grid-template-columns:repeat(9,1fr);gap:4px}
+    .szlabels span{font-size:11px;color:var(--color-text-secondary);text-align:center}
+    .szgrid{display:grid;grid-template-columns:repeat(9,1fr);gap:4px;margin:4px 0}
+    .szgrid input{text-align:center;padding:5px 2px;font-size:12px}
+    .tabs{display:flex;border-bottom:.5px solid var(--color-border-tertiary);margin-bottom:1rem;flex-wrap:wrap}
+    .tab{padding:7px 14px;font-size:13px;cursor:pointer;border-bottom:2px solid transparent;color:var(--color-text-secondary);margin-bottom:-.5px;white-space:nowrap}
+    .tab.active{color:var(--color-text-primary);border-bottom-color:var(--color-text-primary);font-weight:500}
+    .divider{border:none;border-top:.5px solid var(--color-border-tertiary);margin:10px 0}
+    .section-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem}
+    .segment-bar{height:8px;border-radius:4px;background:var(--color-background-secondary);display:flex;overflow:hidden;margin:6px 0}
+    .seg-retail{background:#378add}.seg-ws{background:#639922}.seg-custom{background:#ba7517}
+    .pl-row{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;border-bottom:.5px solid var(--color-border-tertiary)}
+    .pl-row:last-child{border-bottom:none}
+    .order-check{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:6px;cursor:pointer}
+    .order-check:hover{background:var(--color-background-secondary)}
+    .order-check input[type=checkbox]{width:auto;margin-top:3px}
+    .channel-block{border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px;margin-bottom:8px}
+    .actual-flag{background:var(--color-background-warning);border:.5px solid var(--color-border-warning);border-radius:var(--border-radius-md);padding:6px 12px;font-size:12px;color:var(--color-text-warning);margin-bottom:10px}
+    .extra-cost-row{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+    .tier-badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:500}
+    .tier-gold{background:#faeeda;color:#854f0b}.tier-silver{background:#f1efe8;color:#5f5e5a}.tier-new{background:#e6f1fb;color:#185fa5}
+    .chip{display:inline-flex;align-items:center;gap:6px;background:var(--color-background-secondary);border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:4px 10px;font-size:12px;margin:3px}
+    .chip.edit-chip{cursor:pointer}.chip.edit-chip:hover{border-color:var(--color-border-primary)}
+    .colorway-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:var(--border-radius-md);font-size:11px;background:#eeedfe;color:#3c3489;margin:2px}
+    .colorway-tag .xc{cursor:pointer;font-size:12px}
+    .avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:500;font-size:14px;flex-shrink:0}
+    .cust-card{background:var(--color-background-primary);border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;cursor:pointer}
+    .cust-card:hover{border-color:var(--color-border-primary)}
+    .step-num{width:22px;height:22px;border-radius:50%;background:var(--color-background-info);color:var(--color-text-info);font-size:11px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+    .drive-status{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:var(--border-radius-md);font-size:13px;margin-bottom:1rem}
+    .drive-status.disconnected{background:var(--color-background-warning);color:var(--color-text-warning);border:.5px solid var(--color-border-warning)}
+    .drive-status.connected{background:var(--color-background-success);color:var(--color-text-success);border:.5px solid var(--color-border-success)}
+    .drive-status.error{background:var(--color-background-danger);color:var(--color-text-danger);border:.5px solid var(--color-border-danger)}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:100}
+    .modal{background:var(--color-background-primary);border-radius:var(--border-radius-lg);padding:1.5rem;width:min(740px,94vw);max-height:90vh;overflow-y:auto;border:.5px solid var(--color-border-tertiary)}
+    .sup-prod-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:.5px solid var(--color-border-tertiary)}
+    .sup-prod-row:last-child{border-bottom:none}
+    .autofill-badge{font-size:10px;padding:1px 6px;background:#eaf3de;color:#3b6d11;border-radius:var(--border-radius-md);white-space:nowrap;margin-left:6px}
+  </style>
+</head>
+<body>
+<div id="app-root">
+  <div class="nav">
+    <div style="font-weight:500;font-size:15px;color:var(--color-text-primary);display:flex;align-items:center;padding-right:12px;border-right:.5px solid var(--color-border-tertiary);margin-right:4px">Vida Ops</div>
+    <button class="active" onclick="gotoPage('dashboard')">Dashboard</button>
+    <button onclick="gotoPage('customers')">Customers</button>
+    <button onclick="gotoPage('collections')">Collections</button>
+    <button onclick="gotoPage('new-order')">+ New order</button>
+    <button onclick="gotoPage('orders')">Orders</button>
+    <button onclick="gotoPage('suppliers-page')">Suppliers</button>
+    <button onclick="gotoPage('catalogue')">Catalogue</button>
+    <button onclick="gotoPage('settings')">Settings</button>
+  </div>
+
+  <div id="page-dashboard" class="page active"><div class="g5" id="dmets"></div><div class="card"><div class="ctitle">Revenue by channel</div><div id="dchannel"></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem"><div class="card" style="min-width:0"><div class="ctitle">Active orders</div><div id="dorders"></div></div><div class="card" style="min-width:0"><div class="ctitle">Top customers</div><div id="dtop-customers"></div></div></div><div class="card"><div class="ctitle">Collections</div><div id="dcolls"></div></div></div>
+
+  <div id="page-catalogue" class="page"><div class="tabs"><div class="tab active" onclick="showCatTab('cat-types',this)">Product types</div><div class="tab" onclick="showCatTab('cat-designs',this)">Designs &amp; patterns</div><div class="tab" onclick="showCatTab('cat-colors',this)">Colors</div></div><div id="cat-types"><div class="card"><div class="section-hdr"><div style="font-weight:500">Core products</div><button class="btn btnsm btnp" onclick="openProdModal('core')">+ Add product</button></div><div id="core-chips"></div></div><div class="card"><div class="section-hdr"><div style="font-weight:500">Custom / non-standard products</div><button class="btn btnsm btnp" onclick="openProdModal('custom')">+ Add product</button></div><div id="custom-chips"></div></div><div class="card"><div class="section-hdr"><div style="font-weight:500">Product groups</div><button class="btn btnsm btnp" onclick="openGroupModal()">+ Add group</button></div><div id="group-list"></div></div></div><div id="cat-designs" style="display:none"><div class="card"><div class="section-hdr"><div style="font-weight:500">Designs &amp; patterns</div><button class="btn btnsm btnp" onclick="openDesignModal()">+ Add design</button></div><div id="design-list"></div></div></div><div id="cat-colors" style="display:none"><div class="card"><div class="section-hdr"><div style="font-weight:500">Colors</div><button class="btn btnsm btnp" onclick="openColorModal()">+ Add color</button></div><div id="color-list"></div></div></div></div>
+
+  <div id="page-customers" class="page"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;gap:10px;flex-wrap:wrap"><div style="display:flex;gap:8px;flex:1;flex-wrap:wrap"><input placeholder="Search customers..." style="max-width:220px" oninput="renderCustomers(filterCusts(this.value,custTypeFilter))"><select style="max-width:160px" onchange="custTypeFilter=this.value;renderCustomers(filterCusts('',custTypeFilter))"><option value="">All types</option><option>Wholesale</option><option>Custom</option><option>Both</option></select></div><button class="btn btnp" onclick="openCustModal()">+ Add customer</button></div><div class="g4" id="cust-summary-metrics"></div><div id="cust-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem"></div></div>
+  <div id="page-cust-detail" class="page"><button class="btn btnsm" onclick="gotoPage('customers')" style="margin-bottom:1rem">← Back to customers</button><div id="cust-detail-content"></div></div>
+
+  <div id="page-collections" class="page"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;gap:10px"><span style="font-size:13px;color:var(--color-text-secondary)" id="coll-cnt"></span><button class="btn btnp" onclick="openCollModal()">+ New collection</button></div><div id="colls-list"></div></div>
+  <div id="page-coll-detail" class="page"><button class="btn btnsm" onclick="gotoPage('collections')" style="margin-bottom:1rem">← Back</button><div id="coll-detail"></div></div>
+
+  <div id="page-new-order" class="page">
+    <div class="card"><div class="ctitle">Order details</div>
+      <div class="row" style="margin-bottom:10px">
+        <div><label>Supplier</label><select id="no-sup" onchange="onSupChange()"><option value="">Select supplier first...</option></select></div>
+        <div><label>Order #</label><input id="no-num" placeholder="ORD-2025-001"></div>
+        <div><label>Date</label><input type="date" id="no-date"></div>
+        <div><label>Currency</label><select id="no-cur"><option>USD</option><option>EUR</option><option>GBP</option></select></div>
+      </div>
+      <div class="row" style="margin-bottom:10px">
+        <div><label>Collection</label><select id="no-coll"><option value="">None</option></select></div>
+        <div><label>Tracking #</label><input id="no-track"></div>
+        <div><label>Carrier</label><select id="no-carrier"><option value="">Select</option><option>FedEx</option><option>DHL</option><option>UPS</option></select></div>
+      </div>
+      <div class="row">
+        <div><label>Shipping est. ($)</label><input type="number" id="no-ship" value="0" min="0" oninput="recalc()"></div>
+        <div><label>Clearing est. ($)</label><input type="number" id="no-clear" value="0" min="0" oninput="recalc()"></div>
+        <div><label>Extra cost label</label><input id="no-xlbl" placeholder="e.g. Warehouse delivery"></div>
+        <div><label>Extra cost ($)</label><input type="number" id="no-xamt" value="0" min="0" oninput="recalc()"></div>
+      </div>
+    </div>
+    <div id="items-wrap"></div>
+    <button class="btn" onclick="addItem()" style="margin-bottom:1rem">+ Add item</button>
+    <div class="card"><div class="ctitle">Order summary</div><div class="g5" id="ord-sum-met"></div><div class="divider"></div><div style="font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:6px;text-transform:uppercase">Units by size</div><div class="szlabels" style="max-width:500px"><span>XS</span><span>S</span><span>M</span><span>L</span><span>XL</span><span>2XL</span><span>3XL</span><span>4XL</span><span>5XL</span></div><div style="display:grid;grid-template-columns:repeat(9,1fr);gap:4px;max-width:500px;margin-top:4px" id="sz-tots"><span id="st0" style="text-align:center">0</span><span id="st1" style="text-align:center">0</span><span id="st2" style="text-align:center">0</span><span id="st3" style="text-align:center">0</span><span id="st4" style="text-align:center">0</span><span id="st5" style="text-align:center">0</span><span id="st6" style="text-align:center">0</span><span id="st7" style="text-align:center">0</span><span id="st8" style="text-align:center">0</span></div></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end"><button class="btn" onclick="gotoPage('dashboard')">Cancel</button><button class="btn btnp" onclick="saveOrder()">Save order</button></div>
+  </div>
+
+  <div id="page-orders" class="page"><div style="display:flex;gap:10px;margin-bottom:1rem;flex-wrap:wrap"><input placeholder="Search..." style="max-width:200px" oninput="renderOrders(filtOrds(this.value,oSF,oStF))"><select style="max-width:180px" onchange="oSF=this.value;renderOrders(filtOrds('',oSF,oStF))" id="o-sf"><option value="">All suppliers</option></select><select style="max-width:160px" onchange="oStF=this.value;renderOrders(filtOrds('',oSF,oStF))"><option value="">All statuses</option><option>Active</option><option>Shipped</option><option>In transit</option><option>Delivered</option><option>Archived</option></select></div><div class="card"><table><thead><tr><th>Order</th><th>Supplier</th><th>Collection</th><th>Status</th><th>Units</th><th>Landed</th><th>Retail rev</th><th>WS rev</th><th>Custom rev</th><th>Margin</th><th></th></tr></thead><tbody id="ord-tbody"></tbody></table></div></div>
+
+  <div id="page-suppliers-page" class="page"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem"><span style="font-size:13px;color:var(--color-text-secondary)" id="sup-cnt"></span><button class="btn btnp" onclick="openSupModal()">+ Add supplier</button></div><div id="sup-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem"></div></div>
+
+  <div id="page-settings" class="page">
+    <div class="tabs"><div class="tab active" onclick="showStab('st-carriers',this)">Carrier APIs</div><div class="tab" onclick="showStab('st-drive',this)">Google Drive</div><div class="tab" onclick="showStab('st-markup',this)">Markup presets</div></div>
+    <div id="st-carriers"><div class="card"><div class="ctitle">Carrier integrations</div><div style="display:flex;flex-direction:column;gap:12px;margin-bottom:10px"><div><label>FedEx</label><div style="display:flex;gap:8px"><input type="password" placeholder="API key..."><button class="btn btnsm">Test</button></div></div><div><label>DHL</label><div style="display:flex;gap:8px"><input type="password" placeholder="API key..."><button class="btn btnsm">Test</button></div></div><div><label>UPS</label><div style="display:flex;gap:8px"><input type="password" placeholder="API key..."><button class="btn btnsm">Test</button></div></div></div></div></div>
+    <div id="st-drive" style="display:none">
+      <div class="card"><div class="ctitle">Google Drive</div>
+        <div id="drive-status-bar" class="drive-status disconnected"><span id="drive-status-text">Not connected — paste your Client ID below and click Connect</span></div>
+        <div style="margin-bottom:14px"><label style="margin-bottom:4px">Step 1 — OAuth Client ID</label><div style="display:flex;gap:8px"><input id="drive-client-id" placeholder="123456789-abc123.apps.googleusercontent.com" style="font-family:var(--font-mono);font-size:12px"><button class="btn btnsm" onclick="saveDriveClientId()">Save ID</button></div><div style="font-size:11px;color:var(--color-text-secondary);margin-top:5px">Stored in your browser only.</div></div>
+        <div class="divider"></div>
+        <div style="margin-bottom:14px"><label style="margin-bottom:4px">Step 2 — Connect your Google Workspace account</label><div style="display:flex;gap:8px;align-items:center"><input id="drive-account" placeholder="Not connected" readonly style="max-width:280px"><button class="btn btnsm btnp" id="drive-connect-btn" onclick="driveConnect()">Connect to Google</button><button class="btn btnsm btndanger" id="drive-disconnect-btn" onclick="driveDisconnect()" style="display:none">Disconnect</button></div></div>
+        <div class="divider"></div>
+        <div style="margin-bottom:14px"><label style="margin-bottom:4px">Step 3 — Drive folder name</label><input id="drive-root-folder" value="Shipment Orders" style="max-width:280px"></div>
+        <div class="divider"></div>
+        <div style="margin-bottom:14px"><label style="margin-bottom:8px">Step 4 — Auto-save triggers</label><div style="display:flex;flex-direction:column;gap:6px;font-size:13px"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="auto-on-actuals" checked style="width:auto"> Auto-save when actuals are saved</label><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="auto-on-delivered" style="width:auto"> Auto-save when order marked Delivered</label><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="auto-master" checked style="width:auto"> Keep master all-orders sheet in sync</label></div></div>
+        <div class="divider"></div>
+        <div><label style="margin-bottom:8px">Manual sync</label><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btnsm" onclick="driveSaveAllDelivered()">Save all delivered orders</button><button class="btn btnsm" onclick="driveSaveMasterSheet()">Rebuild master sheet</button></div><div id="drive-last-sync" style="font-size:12px;color:var(--color-text-secondary);margin-top:8px"></div></div>
+      </div>
+    </div>
+    <div id="st-markup" style="display:none"><div class="card"><div class="ctitle">Markup presets</div><div id="markup-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1rem"></div><div style="display:flex;gap:8px;align-items:center"><input id="new-mu" placeholder="85" style="max-width:80px"><span style="font-size:13px;color:var(--color-text-secondary)">%</span><button class="btn" onclick="addMarkup()">Add</button></div></div></div>
+  </div>
+
+  <!-- MODALS -->
+  <div id="modal-sup" style="display:none" class="modal-overlay" onclick="if(event.target===this)this.style.display='none'">
+    <div class="modal">
+      <div style="font-size:15px;font-weight:500;margin-bottom:1.25rem" id="sup-modal-ttl">Add supplier</div>
+      <div class="tabs" id="sup-modal-tabs">
+        <div class="tab active" onclick="showSupTab('sup-tab-info',this)">Info</div>
+        <div class="tab" onclick="showSupTab('sup-tab-products',this)">Products &amp; costs</div>
+      </div>
+      <div id="sup-tab-info">
+        <div class="row" style="margin-bottom:10px"><div><label>Company name *</label><input id="sup-name"></div><div><label>Contact</label><input id="sup-contact"></div></div>
+        <div class="row" style="margin-bottom:10px"><div><label>Email</label><input id="sup-email" type="email"></div><div><label>Phone</label><input id="sup-phone"></div></div>
+        <div class="row" style="margin-bottom:10px"><div><label>Country</label><input id="sup-country"></div><div><label>Currency</label><select id="sup-cur"><option>USD</option><option>EUR</option><option>GBP</option><option>CNY</option><option>BDT</option></select></div></div>
+        <div style="margin-bottom:10px"><label>Address</label><textarea id="sup-addr"></textarea></div>
+        <div class="row" style="margin-bottom:10px"><div><label>Payment terms</label><input id="sup-terms"></div><div><label>Lead time</label><input id="sup-lead"></div></div>
+        <div style="margin-bottom:1rem"><label>Notes</label><textarea id="sup-notes"></textarea></div>
+      </div>
+      <div id="sup-tab-products" style="display:none">
+        <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:1rem">Assign products this supplier offers and set the base cost per unit. Cost auto-fills when you select this product on a new order.</div>
+        <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:10px">
+          <div style="flex:1"><label>Add product</label><select id="sup-prod-add-select"><option value="">Select product to add...</option></select></div>
+          <div style="width:120px"><label>Base cost ($)</label><input type="number" id="sup-prod-add-cost" value="0" min="0" step="0.01"></div>
+          <button class="btn btnsm btnp" onclick="addSupplierProduct()" style="white-space:nowrap">Add</button>
+        </div>
+        <div id="sup-prod-list"><div style="font-size:12px;color:var(--color-text-secondary);font-style:italic;padding:8px 0">No products assigned yet.</div></div>
+      </div>
+      <div class="divider"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="closeM('modal-sup')">Cancel</button><button class="btn btnp" onclick="saveSup()">Save supplier</button></div>
+    </div>
+  </div>
+  <div id="modal-prod" style="display:none" class="modal-overlay" onclick="if(event.target===this)this.style.display='none'"><div class="modal"><div style="font-size:15px;font-weight:500;margin-bottom:1.25rem" id="prod-modal-ttl">Add product</div><div style="margin-bottom:10px"><label>Product name *</label><input id="prod-name"></div><div style="margin-bottom:10px"><label>Group</label><select id="prod-group"><option value="">No group</option></select></div><div style="margin-bottom:1.25rem"><label>Notes</label><input id="prod-notes"></div><div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" id="prod-del-btn" style="display:none;margin-right:auto" onclick="deleteProd()">Delete</button><button class="btn" onclick="closeM('modal-prod')">Cancel</button><button class="btn btnp" onclick="saveProd()">Save</button></div></div></div>
+  <div id="modal-group" style="display:none" class="modal-overlay" onclick="if(event.target===this)this.style.display='none'"><div class="modal"><div style="font-size:15px;font-weight:500;margin-bottom:1.25rem" id="group-modal-ttl">Add group</div><div style="margin-bottom:1.25rem"><label>Group name *</label><input id="group-name"></div><div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" id="group-del-btn" style="display:none;margin-right:auto" onclick="deleteGroup()">Delete</button><button class="btn" onclick="closeM('modal-group')">Cancel</button><button class="btn btnp" onclick="saveGroup()">Save</button></div></div></div>
+  <div id="modal-design" style="display:none" class="modal-overlay" onclick="if(event.target===this)this.style.display='none'"><div class="modal"><div style="font-size:15px;font-weight:500;margin-bottom:1.25rem" id="design-modal-ttl">Add design</div><div style="margin-bottom:10px"><label>Design name *</label><input id="design-name"></div><div style="margin-bottom:10px"><label>Category</label><input id="design-cat"></div><div style="margin-bottom:1.25rem"><label>Notes</label><input id="design-notes"></div><div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" id="design-del-btn" style="display:none;margin-right:auto" onclick="deleteDesign()">Delete</button><button class="btn" onclick="closeM('modal-design')">Cancel</button><button class="btn btnp" onclick="saveDesign()">Save</button></div></div></div>
+  <div id="modal-color" style="display:none" class="modal-overlay" onclick="if(event.target===this)this.style.display='none'"><div class="modal"><div style="font-size:15px;font-weight:500;margin-bottom:1.25rem" id="color-modal-ttl">Add color</div><div style="margin-bottom:1.25rem"><label>Color name *</label><input id="color-name"></div><div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" id="color-del-btn" style="display:none;margin-right:auto" onclick="deleteColor()">Delete</button><button class="btn" onclick="closeM('modal-color')">Cancel</button><button class="btn btnp" onclick="saveColor()">Save</button></div></div></div>
+  <div id="modal-coll" style="display:none" class="modal-overlay" onclick="if(event.target===this)this.style.display='none'"><div class="modal"><div style="font-size:15px;font-weight:500;margin-bottom:1.25rem" id="coll-modal-ttl">New collection</div><div class="row" style="margin-bottom:10px"><div><label>Name *</label><input id="coll-name"></div><div><label>Season</label><input id="coll-season"></div></div><div style="margin-bottom:1rem"><label>Description</label><textarea id="coll-desc"></textarea></div><div style="margin-bottom:1rem"><label style="margin-bottom:8px">Link orders</label><div id="coll-ord-picks"></div></div><div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="closeM('modal-coll')">Cancel</button><button class="btn btnp" onclick="saveColl()">Save</button></div></div></div>
+  <div id="modal-cust" style="display:none" class="modal-overlay" onclick="if(event.target===this)this.style.display='none'"><div class="modal"><div style="font-size:15px;font-weight:500;margin-bottom:1.25rem" id="cust-modal-ttl">Add customer</div><div class="row" style="margin-bottom:10px"><div><label>Company / name *</label><input id="cust-company"></div><div><label>Contact name</label><input id="cust-contact"></div></div><div class="row" style="margin-bottom:10px"><div><label>Email</label><input id="cust-email" type="email"></div><div><label>Phone</label><input id="cust-phone"></div></div><div class="row" style="margin-bottom:10px"><div><label>Type</label><select id="cust-type"><option>Wholesale</option><option>Custom</option><option>Both</option></select></div><div><label>Country</label><input id="cust-country"></div><div><label>Default discount %</label><input type="number" id="cust-disc" value="0" min="0" max="100"></div></div><div style="margin-bottom:10px"><label>Address</label><textarea id="cust-addr"></textarea></div><div style="margin-bottom:10px"><label>Payment terms</label><input id="cust-terms"></div><div style="margin-bottom:1rem"><label>Notes</label><textarea id="cust-notes"></textarea></div><div style="margin-bottom:1rem"><label style="margin-bottom:8px">Link to orders</label><div id="cust-ord-picks"></div></div><div style="margin-bottom:1.25rem"><label style="margin-bottom:8px">Link to collections</label><div id="cust-coll-picks"></div></div><div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="closeM('modal-cust')">Cancel</button><button class="btn btnp" onclick="saveCust()">Save customer</button></div></div></div>
+  <div id="modal-ord" style="display:none" class="modal-overlay" onclick="if(event.target===this)this.style.display='none'"><div class="modal" id="modal-ord-content"></div></div>
+</div>
+
+<script src="app.js"></script>
+<script src="google_drive_integration.js"></script>
+</body>
+</html>
